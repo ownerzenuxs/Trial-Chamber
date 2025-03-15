@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Seed Finder</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input, select, button { padding: 10px; margin: 10px; }
+        #result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>Minecraft Seed Finder</h2>
+    
+    <label>Enter Seed:</label>
+    <input type="text" id="seedInput" placeholder="Enter seed">
+    
+    <label>Select Version:</label>
+    <select id="versionSelect">
+        <option value="1.20">Java 1.20</option>
+        <option value="1.21">Java 1.21</option>
+    </select>
+    
+    <button onclick="fetchSeedData()">Find Spawn & Chambers</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function fetchSeedData() {
+            let seed = document.getElementById("seedInput").value;
+            let version = document.getElementById("versionSelect").value;
+            let resultDiv = document.getElementById("result");
+            
+            if (!seed) {
+                resultDiv.innerHTML = "<p>Please enter a seed.</p>";
+                return;
+            }
+            
+            resultDiv.innerHTML = "<p>Loading...</p>";
+            
+            try {
+                let spawnURL = `https://api.chunkbase.com/java/${version}/spawn/${seed}`;
+                let chambersURL = `https://api.chunkbase.com/java/${version}/trial_chambers/${seed}`;
+
+                let spawnData = await fetch(spawnURL).then(res => res.json());
+                let chambersData = await fetch(chambersURL).then(res => res.json());
+
+                resultDiv.innerHTML = `
+                    <h3>Results</h3>
+                    <p><b>Spawn Point:</b> X: ${spawnData.x}, Z: ${spawnData.z}</p>
+                    <h4>Trial Chambers</h4>
+                    <ul>
+                        ${chambersData.locations.map(loc => `<li>X: ${loc.x}, Z: ${loc.z}</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = "<p>Error fetching data. Make sure the seed and version are correct.</p>";
+            }
+        }
+    </script>
+
+</body>
+</html>
